@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 import operations.color_ops as cop
 import operations.arithm_ops as aop
 import operations.morph_ops as mop
@@ -7,36 +8,70 @@ import operations.morph_segm_ops as mseg
 import operations.filters as fil
 
 
-def detectar_anturiors(ruta):
+def detectar_anturios(ruta):
+    # === 1. Cargar imagen ===
     img = cv2.imread(ruta)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+    # === 2. Preprocesamiento: filtro sharpen ===
     img_shp = fil.filtro_sharpen(img.copy())
 
-    # Separar canales
-    r, g, b, _, _ ,_ = cop.separar_canales(img_shp)
-
-    # Diferencia para resaltar el rojo
+    # === 3. Separar canales y diferenciar rojo ===
+    r, g, b, _, _, _ = cop.separar_canales(img_shp)
     diff = aop.restar(r, g)
 
-    # Umbral fijo
+    # === 4. Umbral fijo ===
     binaria = cop.a_binaria(diff, 80)
 
-    # Operaciones morfológicas para limpiar
-    kernel = np.ones((15,15), np.uint8)
-    cerrada = mop.cierre(binaria, kernel)
+    # === 5. Morfología ===
+    kernel_cierre = np.ones((15, 15), np.uint8)
+    cerrada = mop.cierre(binaria, kernel_cierre)
 
-    kernel = np.ones((7,7), np.uint8)
-    abierta = mop.apertura(cerrada, kernel)
+    kernel_apertura = np.ones((7, 7), np.uint8)
+    abierta = mop.apertura(cerrada, kernel_apertura)
 
-    # Buscar contornos
+    # === 6. Contornos ===
     contornos, _ = cv2.findContours(abierta, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Filtrar por área para eliminar ruido
     contornos_filtrados = [c for c in contornos if cv2.contourArea(c) > 1000]
 
-    # Dibujar resultado
+    # === 7. Dibujar resultado y calcular propiedades ===
     resultado = cop.a_rgb(img.copy())
-    cv2.drawContours(resultado, contornos_filtrados, -1, (0,255,255), 3)
+    propiedades = []
 
-    # Devolver resultados
-    return resultado, len(contornos_filtrados)
+    for i, c in enumerate(contornos_filtrados):
+        # Dibujar contorno
+        cv2.drawContours(resultado, [c], -1, (0, 255, 255), 3)
+
+        # Calcular propiedades
+        area = cv2.contourArea(c)
+        perimetro = cv2.arcLength(c, True)
+        M = cv2.moments(c)
+        if M["m00"] != 0:
+            cx, cy = int(M["m10"]/M["m00"]), int(M["m01"]/M["m00"])
+        else:
+            cx, cy = 0, 0
+
+        # Dibujar centroide y etiqueta
+        cv2.circle(resultado, (cx, cy), 5, (0, 255, 255), -1)
+        cv2.putText(resultado, f"A{i+1}", (cx, cy-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+
+        # Guardar propiedades
+        propiedades.append({
+            "id": i+1,
+            "area": area,
+            "perimetro": perimetro,
+            "centroide": (cx, cy)
+        })
+
+    # === 8. Devolver resultados ===
+    imagenes = {
+        "Original": img_rgb,
+        "Sharpen": cop.a_rgb(img_shp),
+        "R-G": diff,
+        "Binaria": binaria,
+        "Post-morfología": abierta,
+        "Resultado final": resultado
+    }
+
+    return imagenes, propiedades

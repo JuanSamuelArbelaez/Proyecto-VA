@@ -22,6 +22,7 @@ if __name__ == "__main__":
         "src/data/anturio04.jpg",
         "src/data/anturio05.jpg",
         "src/data/anturio06.jpg",
+        "src/data/anturio07.jpg",
     ]
 
     for ruta in rutas:

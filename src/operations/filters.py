@@ -1,5 +1,4 @@
 import cv2
-import numpy as npl
 import numpy as np
 
 def filtro_blur(img, ksize=(5,5)):

@@ -10,7 +10,7 @@ import pruebas as pb
 from utils import cargar_imagen, mostrar_imagen
 
 
-def detectar_anturios(ruta):
+def detectar_centros_manzana(ruta):
     # === 1. Cargar imagen ===
     img = cv2.imread(ruta)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -78,7 +78,7 @@ def detectar_anturios(ruta):
 
     return imagenes, propiedades
 
-def encontrar_petalos(rutas):
+def encontrar_caracteristicas(rutas):
     ruta1 = rutas[0]
 
     """
@@ -106,3 +106,8 @@ def encontrar_petalos(rutas):
             mostrar_imagen(img, f"{nombre} - Detectados: {len(propiedades) if nombre=='Resultado final' else 'Procesando...'}")
 
         print("-" * 50)
+    pb.pruebas_hough(ruta1)
+    pb.pruebas_descriptores(ruta1, ruta2)
+    pb.pruebas_hog(ruta1)
+    pb.pruebas_texturas(ruta1)
+    pb.pruebas_momentos_hu(ruta1)

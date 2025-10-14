@@ -2,41 +2,41 @@ from utils import mostrar_imagen
 import anturios as ant
 import pruebas as pb
 
-if __name__ == "__main__":
-    ruta1 = "src/data/anturio01.jpg"
-
-    """
-    pb.pruebas_color_ops(ruta1)
-    pb.pruebas_arithm_ops(ruta1, ruta1)
-    pb.pruebas_geometric_ops(ruta1)
-    pb.pruebas_logic_ops(ruta1, ruta1)
-    pb.pruebas_morph_ops(ruta1)
-    pb.pruebas_morph_segm_ops(ruta1)
-    pb.pruebas_filters(ruta1)
-    """
-
+def anturios():
     rutas = [
-        "src/data/anturio01.jpg",
-        "src/data/anturio02.jpg",
-        "src/data/anturio03.jpg",
-        "src/data/anturio04.jpg",
-        "src/data/anturio05.jpg",
-        "src/data/anturio06.jpg",
-        "src/data/anturio07.jpg",
+        "src/data/P1/anturio01.jpg",
+        "src/data/P1/anturio02.jpg",
+        "src/data/P1/anturio03.jpg",
+        "src/data/P1/anturio04.jpg",
+        "src/data/P1/anturio05.jpg",
+        "src/data/P1/anturio06.jpg",
+        "src/data/P1/anturio07.jpg",
     ]
 
-    for ruta in rutas:
-        imagenes, propiedades = ant.detectar_anturios(ruta)
-        print(f"Archivo: {ruta}")
-        print("Número de anturios detectados:", len(propiedades))
+    ant.encontrar_petalos(rutas)
 
-        # Imprimir propiedades de cada anturio
-        for p in propiedades:
-            print(f"  Anturio {p['id']} -> Área: {p['area']:.2f}, "
-                f"Perímetro: {p['perimetro']:.2f}, Centroide: {p['centroide']}")
+def manzanas():
+    rutas = [
+        "src/data/P2/Manzana_01.png",
+        "src/data/P2/Manzana_02.png",
+        "src/data/P2/Manzana_03.png",
+        "src/data/P2/Manzana_04.png",
+        "src/data/P2/Manzana_05.png",
+        "src/data/P2/Manzana_06.jpg",
+        "src/data/P2/Manzana_07.jpg",
+        "src/data/P2/Manzana_08.png",
+        "src/data/P2/Manzana_09.png",
+        "src/data/P2/Manzana_10.png",
+    ]
 
-        # Mostrar todas las etapas de la imagen
-        for nombre, img in imagenes.items():
-            mostrar_imagen(img, f"{nombre} - Detectados: {len(propiedades) if nombre=='Resultado final' else 'Procesando...'}")
+    ruta1 = rutas[3]
+    ruta2 = rutas[4]
 
-        print("-" * 50)
+    pb.pruebas_hough(ruta1)
+    pb.pruebas_descriptores(ruta1, ruta2)
+    pb.pruebas_hog(ruta1)
+    pb.pruebas_texturas(ruta1)
+    pb.pruebas_momentos_hu(ruta1)
+
+if __name__ == "__main__":
+    manzanas()

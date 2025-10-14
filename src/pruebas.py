@@ -8,6 +8,11 @@ import operations.logic_ops as lop
 import operations.morph_ops as mop
 import operations.morph_segm_ops as mseg
 import operations.filters as fil
+import operations.descriptors as dop
+import operations.textures_first_order as tfo
+import operations.textures_second_order as tso
+import operations.houg_transform as ht
+import operations.hu_moments as hm
 
 
 def pruebas_color_ops(ruta):
@@ -104,3 +109,80 @@ def pruebas_filters(ruta):
     mostrar_imagen(fil.borde_sobel(img), "Sobel XY")
     mostrar_imagen(fil.borde_prewitt(img), "Prewitt")
     mostrar_imagen(fil.borde_canny(img), "Canny")
+
+
+def pruebas_texturas(ruta):
+    img = cargar_imagen(ruta, escala_gris=True)
+
+    print("=== Texturas de Primer Orden ===")
+    print("Media:", tfo.media(img))
+    print("Varianza:", tfo.varianza(img))
+    print("Desviación estándar:", tfo.desviacion_estandar(img))
+    print("Entropía:", tfo.entropia(img))
+
+    print("\n=== Texturas de Segundo Orden (GLCM) ===")
+    print("Contraste:", tso.contraste(img))
+    print("Homogeneidad:", tso.homogeneidad(img))
+    print("Disimilitud:", tso.disimilitud(img))
+    print("Energía:", tso.energia(img))
+    print("Correlación:", tso.correlacion(img))
+    print("Media GLCM:", tso.media_glcm(img))
+    print("Desviación estándar GLCM:", tso.desviacion_estandar_glcm(img))
+    print("Entropía GLCM:", tso.entropia_glcm(img))
+
+
+def pruebas_momentos_hu(ruta):
+    hu_moments, img_proc = hm.calcular_momentos_hu(ruta, suavizar=True, canny=True)
+    print("=== Momentos de Hu ===")
+    for i, hu in enumerate(hu_moments):
+        print(f"Hu[{i+1}] = {hu[0]:.5e}")
+    _, img_final = hm.generar_imagen_con_momentos_completo(img_proc, hu_moments)
+    mostrar_imagen(img_final, "Momentos de Hu")
+
+
+def pruebas_hough(ruta):
+    img = cargar_imagen(ruta, escala_gris=True)
+    img_lineas, bordes = ht.houg_transform(img, umbral=120)
+    mostrar_imagen(bordes, "Bordes (Canny)")
+    mostrar_imagen(img_lineas, "Transformada de Hough (Líneas)")
+
+    img_circulos, _ = ht.houg_transform_circles(img)
+    mostrar_imagen(img_circulos, "Transformada de Hough (Círculos)")
+
+
+def pruebas_descriptores(ruta1, ruta2=None):
+    img = cargar_imagen(ruta1, escala_gris=True)
+
+    # --- Puntos clave ---
+    _, _, img_sift = dop.puntos_clave_sift(img)
+    mostrar_imagen(img_sift, "Puntos Clave SIFT")
+
+    _, _, img_orb = dop.puntos_clave_orb(img)
+    mostrar_imagen(img_orb, "Puntos Clave ORB")
+
+    _, _, img_kaze = dop.puntos_clave_kaze(img)
+    mostrar_imagen(img_kaze, "Puntos Clave KAZE")
+
+    _, _, img_akaze = dop.puntos_clave_akaze(img)
+    mostrar_imagen(img_akaze, "Puntos Clave AKAZE")
+
+    # --- Segmentación con GrabCut ---
+    img_seg = dop.segmentacion_grabcut(img)
+    mostrar_imagen(img_seg, "Segmentación GrabCut")
+
+    # --- Laplaciano de Gauss ---
+    img_log = dop.laplaciano_de_gauss(img)
+    mostrar_imagen(img_log, "Laplaciano de Gauss")
+
+    # --- Flujo óptico si hay segunda imagen ---
+    if ruta2:
+        img2 = cargar_imagen(ruta2, escala_gris=True)
+        flow_rgb = dop.flujo_optico(img, img2)
+        mostrar_imagen(flow_rgb, "Flujo Óptico")
+
+
+def pruebas_hog(ruta):
+    img = cargar_imagen(ruta, escala_gris=True)
+    hog_features = dop.caracteristicas_hog(img)
+    print("=== Descriptores HOG ===")
+    print("Vector de características:", hog_features.shape)

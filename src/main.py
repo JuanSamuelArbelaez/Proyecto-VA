@@ -31,7 +31,8 @@ def manzanas():
     ]
 
     mnz.analizar_manzanas(rutas)
-    #mnz.test(rutas)
+    #mnz.test1(rutas)
+    #mnz.test2(rutas)
 
 if __name__ == "__main__":
     manzanas()

@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import src.operations.filters as filters
+import operations.filters as filters
 from io import BytesIO
 
 
 def calcular_momentos_hu(img, suavizar=False, canny=False, umbral=127):
-    img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if len(img.shape) == 3 else img
 
     # Suavizado opcional
     if suavizar:

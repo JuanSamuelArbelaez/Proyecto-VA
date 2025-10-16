@@ -112,7 +112,7 @@ def pruebas_filters(ruta):
 
 
 def pruebas_texturas(ruta):
-    img = cargar_imagen(ruta, escala_gris=True)
+    img = cargar_imagen(ruta, modo='gris')
 
     print("=== Texturas de Primer Orden ===")
     print("Media:", tfo.media(img))
@@ -132,7 +132,8 @@ def pruebas_texturas(ruta):
 
 
 def pruebas_momentos_hu(ruta):
-    hu_moments, img_proc = hm.calcular_momentos_hu(ruta, suavizar=True, canny=True)
+    img = cargar_imagen(ruta, modo='gris')
+    hu_moments, img_proc = hm.calcular_momentos_hu(img, suavizar=True, canny=True)
     print("=== Momentos de Hu ===")
     for i, hu in enumerate(hu_moments):
         print(f"Hu[{i+1}] = {hu[0]:.5e}")
@@ -141,7 +142,7 @@ def pruebas_momentos_hu(ruta):
 
 
 def pruebas_hough(ruta):
-    img = cargar_imagen(ruta, escala_gris=True)
+    img = cargar_imagen(ruta, modo='gris')
     img_lineas, bordes = ht.houg_transform(img, umbral=120)
     mostrar_imagen(bordes, "Bordes (Canny)")
     mostrar_imagen(img_lineas, "Transformada de Hough (Líneas)")
@@ -151,7 +152,7 @@ def pruebas_hough(ruta):
 
 
 def pruebas_descriptores(ruta1, ruta2=None):
-    img = cargar_imagen(ruta1, escala_gris=True)
+    img = cargar_imagen(ruta1, modo='gris')
 
     # --- Puntos clave ---
     _, _, img_sift = dop.puntos_clave_sift(img)
@@ -167,7 +168,7 @@ def pruebas_descriptores(ruta1, ruta2=None):
     mostrar_imagen(img_akaze, "Puntos Clave AKAZE")
 
     # --- Segmentación con GrabCut ---
-    img_seg = dop.segmentacion_grabcut(img)
+    img_seg = dop.segmentacion_grabcut(cargar_imagen(ruta1))
     mostrar_imagen(img_seg, "Segmentación GrabCut")
 
     # --- Laplaciano de Gauss ---
@@ -176,13 +177,14 @@ def pruebas_descriptores(ruta1, ruta2=None):
 
     # --- Flujo óptico si hay segunda imagen ---
     if ruta2:
-        img2 = cargar_imagen(ruta2, escala_gris=True)
+        img2 = cargar_imagen(ruta2, modo='gris')
         flow_rgb = dop.flujo_optico(img, img2)
         mostrar_imagen(flow_rgb, "Flujo Óptico")
 
 
 def pruebas_hog(ruta):
-    img = cargar_imagen(ruta, escala_gris=True)
+    img = cargar_imagen(ruta, modo='gris')
     hog_features = dop.caracteristicas_hog(img)
     print("=== Descriptores HOG ===")
     print("Vector de características:", hog_features.shape)
+    

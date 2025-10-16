@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import src.operations.filters as filters
+import operations.filters as filters
 
 def houg_transform(img, apertureSize=7, umbral=150):
     img = cv2.imread(img, cv2.IMREAD_GRAYSCALE) if len(img.shape)==3 else img

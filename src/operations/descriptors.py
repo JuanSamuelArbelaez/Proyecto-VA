@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import src.operations.filters as filters
+import operations.filters as filters
 
 
 def caracteristicas_hog(img):

@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pandas as pd
 
 import operations.filters as fil
 import operations.color_ops as cop
@@ -11,6 +12,7 @@ import operations.hu_moments as hm
 import operations.textures_first_order as tfo
 import operations.textures_second_order as tso
 from utils import cargar_imagen, mostrar_imagen
+from menu_tkinter import lanzar_menu_interactivo
 
 
 def detectar_interiores_manzana(ruta):
@@ -74,6 +76,8 @@ def detectar_interiores_manzana(ruta):
     contornos_final, _ = cv2.findContours(diff_binaria, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     resultado_final = img.copy()
 
+    mask_final = np.zeros_like(gris, dtype=np.uint8)
+
     for i, c in enumerate(contornos_final):
         area = cv2.contourArea(c)
         if area < 4000:
@@ -90,29 +94,29 @@ def detectar_interiores_manzana(ruta):
         cv2.circle(resultado_final, (cx, cy), 5, (0, 255, 255), -1)
         cv2.putText(resultado_final, f"Carne_{i+1}", (cx, cy-10),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+        
+        cv2.drawContours(mask_final, [c], -1, 255, -1)
+
+    recorte_final = cv2.bitwise_and(diff, diff, mask=mask_final)
 
     # === 7. DESCRIPTORES DE TEXTURA Y FORMA ===
-    tfo_media = tfo.media(diff)
-    tfo_var = tfo.varianza(diff)
-    tfo_std = tfo.desviacion_estandar(diff)
-    tfo_entropy = tfo.entropia(diff)
+    tfo_media = tfo.media(recorte_final)
+    tfo_var = tfo.varianza(recorte_final)
+    tfo_std = tfo.desviacion_estandar(recorte_final)
+    tfo_entropy = tfo.entropia(recorte_final)
 
-    tso_contrast = tso.contraste(diff)
-    tso_homog = tso.homogeneidad(diff)
-    tso_dissim = tso.disimilitud(diff)
-    tso_energy = tso.energia(diff)
-    tso_corr = tso.correlacion(diff)
-    tso_entropy = tso.entropia_glcm(diff)
+    tso_contrast = tso.contraste(recorte_final)
+    tso_homog = tso.homogeneidad(recorte_final)
+    tso_dissim = tso.disimilitud(recorte_final)
+    tso_energy = tso.energia(recorte_final)
+    tso_corr = tso.correlacion(recorte_final)
+    tso_entropy = tso.entropia_glcm(recorte_final)
 
-    momentos_hu = hm.calcular_momentos_hu(diff)
+    momentos_hu, _ = hm.calcular_momentos_hu(recorte_final)
+    _, img_hu_m = hm.generar_imagen_con_momentos_completo(recorte_final, momentos_hu, title="Momentos de Hu")
 
-    print("\n --- Descriptores ---")
-    print(f"TFO: media={tfo_media:.3f}, var={tfo_var:.3f}, std={tfo_std:.3f}, entropía={tfo_entropy:.3f}")
-    print(f"TSO: contraste={tso_contrast}, homog={tso_homog}, disim={tso_dissim}, energía={tso_energy}, corr={tso_corr}")
-    print(f"Hu moments: {momentos_hu}\n")
-
-    # === 8. VISUALIZACIÓN DE DESCRIPTORES ===
-    imagen_descriptores = cv2.cvtColor(diff, cv2.COLOR_GRAY2BGR)
+    # === 8. DESCRIPTORES ===
+    imagen_descriptores = cv2.cvtColor(recorte_final, cv2.COLOR_GRAY2BGR)
     overlay = imagen_descriptores.copy()
 
     texto = [
@@ -128,12 +132,43 @@ def detectar_interiores_manzana(ruta):
     # Fondo negro semitransparente para legibilidad
     cv2.rectangle(overlay, (5, 5), (430, 5 + 35*len(texto)), (0, 0, 0), -1)
     imagen_descriptores = cv2.addWeighted(overlay, 0.6, imagen_descriptores, 0.4, 0)
-
     for i, t in enumerate(texto):
-        cv2.putText(imagen_descriptores, t, (15, 35 + i*35),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(imagen_descriptores, t, (15, 35 + i*35), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)
+
+    kp_sift, des_sift, img_sift = desc.puntos_clave_sift(recorte_final)
+    num_kp_sift = 0 if kp_sift is None else len(kp_sift)
+
+    kp_orb, des_orb, img_orb = desc.puntos_clave_orb(recorte_final, nfeatures=1000)
+    num_kp_orb = 0 if kp_orb is None else len(kp_orb)
+
+    ht_circulos, circulos = ht.houg_transform_circles(recorte_final, canny_umbral=50, acumulacion_umbral=25, maxRadius=70)
+    num_circulos = 0 if circulos is None else circulos.shape[1]
 
     # === 9. SALIDAS ===
+    vect_caracteristicas = {
+        "nombre": ruta.split('/')[-1],
+        "tfo_media": float(tfo_media),
+        "tfo_varianza": float(tfo_var),
+        "tfo_std": float(tfo_std),
+        "tfo_entropia": float(tfo_entropy),
+        "tso_contraste": float(tso_contrast[0,0]),
+        "tso_homogeneidad": float(tso_homog[0,0]),
+        "tso_disimilitud": float(tso_dissim[0,0]),
+        "tso_energia": float(tso_energy[0,0]),
+        "tso_correlacion": float(tso_corr[0,0]),
+        "tso_entropia": float(tso_entropy),
+        "hu_1": float(momentos_hu[0]),
+        "hu_2": float(momentos_hu[1]),
+        "hu_3": float(momentos_hu[2]),
+        "hu_4": float(momentos_hu[3]),
+        "hu_5": float(momentos_hu[4]),
+        "hu_6": float(momentos_hu[5]),
+        "hu_7": float(momentos_hu[6]),
+        "num_keypoints_sift": num_kp_sift,
+        "num_keypoints_orb": num_kp_orb,
+        "num_circulos_hough": num_circulos
+    }
+
     imagenes = {
         "Sharpen + Gaussiano": img,
         "Imagen a grises": gris,
@@ -145,21 +180,34 @@ def detectar_interiores_manzana(ruta):
         "Resta G - R": diff,
         "Binaria de resta": diff_binaria,
         "Contornos final": resultado_final,
+        "Recorte final": recorte_final,
         "Descriptores sobre interior": imagen_descriptores,
+        "Momentos de Hu": img_hu_m,
+        "Puntos clave SIFT": img_sift,
+        "Puntos clave ORB": img_orb,
+        "Círculos Hough": ht_circulos
     }
 
-    return imagenes
+    return imagenes, vect_caracteristicas
 
 
 def analizar_manzanas(rutas):
-    """
-    Ejecuta el análisis completo de una lista de imágenes de manzanas.
-    """
+    lista_vectores = []
+    lista_resultados = []
+
     for ruta in rutas:
         print(("-"*50)+f"\nProcesando imagen: {ruta}\n")
-        imgs = detectar_interiores_manzana(ruta)
-        for nombre, im in imgs.items():
-            mostrar_imagen(im, nombre)
+        imagenes, vector_caract = detectar_interiores_manzana(ruta)
+        lista_vectores.append(vector_caract)
+        lista_resultados.append((ruta, imagenes))
+
+    # Guardar CSV
+    df = pd.DataFrame(lista_vectores)
+    df.to_csv("resultados_manzanas.csv", sep='|', index=False)
+    print("\nArchivo 'resultados_manzanas.csv' guardado correctamente ✅")
+
+    # Lanzar menú interactivo
+    lanzar_menu_interactivo(lista_resultados, df)
 
 
 def test1(rutas):

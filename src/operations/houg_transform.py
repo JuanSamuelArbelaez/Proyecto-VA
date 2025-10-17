@@ -38,7 +38,8 @@ def houg_transform_circles(img, dp=1.2, minDist=40, canny_umbral=100, acumulacio
         maxRadius=maxRadius
     )
 
-    output_img = img.copy()
+    output_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    
     if circles is not None:
         circles = np.uint16(np.around(circles))
         for (x, y, r) in circles[0, :]:

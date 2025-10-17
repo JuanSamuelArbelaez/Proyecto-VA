@@ -87,7 +87,7 @@ def puntos_clave_sift(img):
 
     return keypoints, descriptors, img_keypoints
 
-def puntos_clave_orb(img):
+def puntos_clave_orb(img, nfeatures=500):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if len(img.shape) == 3 else img
 
     orb = cv2.ORB_create()

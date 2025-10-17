@@ -203,7 +203,7 @@ def analizar_manzanas(rutas):
 
     # Guardar CSV
     df = pd.DataFrame(lista_vectores)
-    df.to_csv("resultados_manzanas.csv", sep='|', index=False)
+    df.to_csv("resultados_manzanas.csv", index=False)
     print("\nArchivo 'resultados_manzanas.csv' guardado correctamente ✅")
 
     # Lanzar menú interactivo

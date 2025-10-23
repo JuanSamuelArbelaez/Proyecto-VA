@@ -2,6 +2,7 @@ from utils import mostrar_imagen
 import anturios as ant
 import manzanas as mnz
 import pruebas as pb
+import martillos_destornillagores as md
 
 def anturios():
     rutas = [
@@ -34,5 +35,12 @@ def manzanas():
     #mnz.test1(rutas)
     #mnz.test2(rutas)
 
+def martillos_destornilladores():
+    rutas = [
+        "src/data/Proyecto/hamm_scrw.jpg",
+    ]
+
+    md.analizar_martillos_destornilladores(rutas)
+
 if __name__ == "__main__":
-    manzanas()
+    martillos_destornilladores()

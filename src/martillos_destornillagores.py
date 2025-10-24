@@ -21,22 +21,22 @@ def analizar_martillos_destornilladores(rutas):
         gris = cop.a_gris(imagen)
 
         # Aquí iría el procesamiento específico para martillos y destornilladores
-        mostrar_imagen(imagen, "Martillos y Destornilladores")
+        # mostrar_imagen(imagen, "Martillos y Destornilladores")
 
-        log = desc.laplaciano_de_gauss(imagen)
+        log = desc.laplaciano_de_gauss(imagen, (7,7))
         log = fil.filtro_blur(log)
         log = fil.filtro_sharpen(log)
 
-        mostrar_imagen(log, "Laplaciano de Gauss")
+        # mostrar_imagen(log, "Laplaciano de Gauss")
 
-        _, binaria = cv2.threshold(log, 8, 188, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        _, binaria = cv2.threshold(log, 0, 210, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         binaria_blur = fil.filtro_blur(binaria)
         binaria_sharpen = fil.filtro_sharpen(binaria_blur)
 
 
         _, binaria = cv2.threshold(binaria_sharpen, 8, 188, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-        mostrar_imagen(binaria_sharpen, "Imagen Binaria después de Blur y Sharpen")
+        # mostrar_imagen(binaria_sharpen, "Imagen Binaria después de Blur y Sharpen")
 
         kernel = np.ones((9, 9), np.uint8)
         binaria_dilatada = cv2.dilate(binaria, kernel, iterations=1)
@@ -50,7 +50,7 @@ def analizar_martillos_destornilladores(rutas):
                 continue
             cv2.drawContours(mask, [c], -1, 255, -1)
 
-        mostrar_imagen(mask, "Máscara de Interiores")
+        # mostrar_imagen(mask, "Máscara de Interiores")
 
         mask = cv2.erode(mask, kernel, iterations=2)
 
@@ -66,7 +66,7 @@ def analizar_martillos_destornilladores(rutas):
                 continue
             cv2.drawContours(res, [c], -1, (0, 255, 0), 3)
         
-        mostrar_imagen(res, "Contornos sobre Imagen Original")
+        #mostrar_imagen(res, "Contornos sobre Imagen Original")
         
 
 

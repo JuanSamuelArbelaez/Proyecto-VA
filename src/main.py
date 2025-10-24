@@ -37,7 +37,14 @@ def manzanas():
 
 def martillos_destornilladores():
     rutas = [
-        "src/data/Proyecto/hamm_scrw.jpg",
+        "src/data/Proyecto/hm_sw_01.png",
+        "src/data/Proyecto/hm_sw_02.png",
+        "src/data/Proyecto/hm_sw_03.png",
+        "src/data/Proyecto/hm_sw_04.png",
+        "src/data/Proyecto/hm_sw_05.png",
+        "src/data/Proyecto/hm_sw_06.png",
+        "src/data/Proyecto/hm_sw_07.png",
+        "src/data/Proyecto/hm_sw_08.png",
     ]
 
     md.analizar_martillos_destornilladores(rutas)

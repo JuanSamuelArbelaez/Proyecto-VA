@@ -29,16 +29,16 @@ def analizar_martillos_destornilladores(rutas):
 
         # mostrar_imagen(log, "Laplaciano de Gauss")
 
-        _, binaria = cv2.threshold(log, 0, 210, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        _, binaria = cv2.threshold(log, 10, 170, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         binaria_blur = fil.filtro_blur(binaria)
         binaria_sharpen = fil.filtro_sharpen(binaria_blur)
 
 
-        _, binaria = cv2.threshold(binaria_sharpen, 8, 188, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        _, binaria = cv2.threshold(binaria_sharpen, 8, 170, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         # mostrar_imagen(binaria_sharpen, "Imagen Binaria después de Blur y Sharpen")
 
-        kernel = np.ones((9, 9), np.uint8)
+        kernel = np.ones((7, 7), np.uint8)
         binaria_dilatada = cv2.dilate(binaria, kernel, iterations=1)
         contornos, _ = cv2.findContours(binaria_dilatada, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -54,8 +54,8 @@ def analizar_martillos_destornilladores(rutas):
 
         mask = cv2.erode(mask, kernel, iterations=2)
 
-        recorte_color = cv2.bitwise_and(imagen, imagen, mask=mask)
-        mostrar_imagen(recorte_color, "Recorte en Escala de Grises")
+        recorte_gris = cv2.bitwise_and(imagen, imagen, mask=mask)
+        # mostrar_imagen(recorte_gris, "Recorte en Escala de Grises")
 
         contornos_2, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -66,7 +66,7 @@ def analizar_martillos_destornilladores(rutas):
                 continue
             cv2.drawContours(res, [c], -1, (0, 255, 0), 3)
         
-        #mostrar_imagen(res, "Contornos sobre Imagen Original")
+        mostrar_imagen(res, "Contornos sobre Imagen Original")
         
 
 

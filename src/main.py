@@ -44,7 +44,6 @@ def martillos_destornilladores():
         "src/data/Proyecto/hm_sw_05.png",
         "src/data/Proyecto/hm_sw_06.png",
         "src/data/Proyecto/hm_sw_07.png",
-        "src/data/Proyecto/hm_sw_08.png",
     ]
 
     md.analizar_martillos_destornilladores(rutas)

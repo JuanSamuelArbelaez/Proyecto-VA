@@ -54,8 +54,7 @@ def analizar_martillos_destornilladores(rutas):
 
         mask = cv2.erode(mask, kernel, iterations=2)
 
-        recorte_gris = cv2.bitwise_and(imagen, imagen, mask=mask)
-        # mostrar_imagen(recorte_gris, "Recorte en Escala de Grises")
+        recorte_color = cv2.bitwise_and(imagen, imagen, mask=mask)
 
         contornos_2, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -67,6 +66,20 @@ def analizar_martillos_destornilladores(rutas):
             cv2.drawContours(res, [c], -1, (0, 255, 0), 3)
         
         mostrar_imagen(res, "Contornos sobre Imagen Original")
+
+        kp_sift, des_sift, img_sift = desc.puntos_clave_sift(recorte_color)
+        num_kp_sift = 0 if kp_sift is None else len(kp_sift)
+        mostrar_imagen(img_sift)
+
+        kp_orb, des_orb, img_orb = desc.puntos_clave_orb(recorte_color, nfeatures=1000)
+        num_kp_orb = 0 if kp_orb is None else len(kp_orb)
+        mostrar_imagen(img_orb)
+
+        ht_circulos, circulos = ht.houg_transform_circles(recorte_color, canny_umbral=50, acumulacion_umbral=25, maxRadius=70)
+        num_circulos = 0 if circulos is None else circulos.shape[1]
+        mostrar_imagen(ht_circulos)
+        
+
         
 
 

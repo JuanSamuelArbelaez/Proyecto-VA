@@ -2,18 +2,19 @@ import cv2
 import numpy as np
 import pandas as pd
 
-import operations.filters as fil
 import operations.color_ops as cop
-import operations.morph_ops as mop
-import operations.arithm_ops as aop
 import operations.descriptors as desc
+import operations.filters as fil
 import operations.houg_transform as ht
 import operations.hu_moments as hm
 import operations.textures_first_order as tfo
 import operations.textures_second_order as tso
 from utils import cargar_imagen, mostrar_imagen
 
+
 def analizar_martillos_destornilladores(rutas):
+
+    resultados = []  # lista para guardar vectores de características
     for ruta in rutas:
         print(f"Analizando imagen: {ruta}")
         imagen = cargar_imagen(ruta, modo='color')
@@ -42,7 +43,7 @@ def analizar_martillos_destornilladores(rutas):
         binaria_dilatada = cv2.dilate(binaria, kernel, iterations=1)
         contornos, _ = cv2.findContours(binaria_dilatada, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # === 4. MÁSCARA DE INTERIORES ===
+        #  Máscara de interiores
         mask = np.zeros_like(gris, dtype=np.uint8)
         for c in contornos:
             area = cv2.contourArea(c)
@@ -78,7 +79,52 @@ def analizar_martillos_destornilladores(rutas):
         ht_circulos, circulos = ht.houg_transform_circles(recorte_color, canny_umbral=50, acumulacion_umbral=25, maxRadius=70)
         num_circulos = 0 if circulos is None else circulos.shape[1]
         mostrar_imagen(ht_circulos)
-        
+
+        # Momentos y texturas
+        momentos_hu, _ = hm.calcular_momentos_hu(mask)
+        tfo_media = tfo.media(gris)
+        tfo_varianza = tfo.varianza(gris)
+        tfo_std = tfo.desviacion_estandar(gris)
+        tfo_entropia = tfo.entropia(gris)
+
+        tso_contraste = tso.contraste(gris)[0, 0]
+        tso_homog = tso.homogeneidad(gris)[0, 0]
+        tso_dissim = tso.disimilitud(gris)[0, 0]
+        tso_energy = tso.energia(gris)[0, 0]
+        tso_corr = tso.correlacion(gris)[0, 0]
+        tso_entropy = tso.entropia_glcm(gris)
+
+        # Guardar características
+        vect_caracteristicas = {
+            "nombre": ruta.split("/")[-1],
+            "tfo_media": float(tfo_media),
+            "tfo_varianza": float(tfo_varianza),
+            "tfo_std": float(tfo_std),
+            "tfo_entropia": float(tfo_entropia),
+            "tso_contraste": float(tso_contraste),
+            "tso_homogeneidad": float(tso_homog),
+            "tso_disimilitud": float(tso_dissim),
+            "tso_energia": float(tso_energy),
+            "tso_correlacion": float(tso_corr),
+            "tso_entropia": float(tso_entropy),
+            "hu_1": float(momentos_hu[0]),
+            "hu_2": float(momentos_hu[1]),
+            "hu_3": float(momentos_hu[2]),
+            "hu_4": float(momentos_hu[3]),
+            "hu_5": float(momentos_hu[4]),
+            "hu_6": float(momentos_hu[5]),
+            "hu_7": float(momentos_hu[6]),
+            "num_keypoints_sift": num_kp_sift,
+            "num_keypoints_orb": num_kp_orb,
+            "num_circulos_hough": num_circulos
+        }
+
+        resultados.append(vect_caracteristicas)
+
+        # Guardar CSV
+        df = pd.DataFrame(resultados)
+        df.to_csv("resultados_martillos_destornilladores.csv", index=False)
+        print("\nArchivo 'resultados_martillos_destornilladores.csv' guardado correctamente ✅")
 
         
 

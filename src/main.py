@@ -2,7 +2,7 @@ from utils import mostrar_imagen
 import anturios as ant
 import manzanas as mnz
 import pruebas as pb
-import martillos_destornillagores as md
+import martillos_destornilladores as md
 
 def anturios():
     rutas = [

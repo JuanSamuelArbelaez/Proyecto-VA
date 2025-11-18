@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import cv2
 
-model = YOLO("best_2.pt") # este es el obtenido entrenado desde cero
+model = YOLO("best_new_model_2.pt") # este es el obtenido entrenado desde cero
 
 cam = cv2.VideoCapture(0)
 
